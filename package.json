@@ -1,9 +1,9 @@
 {
-  "name": "community-cordova-plugin-social-sharing",
+  "name": "cordova-plugin-social-sharing",
   "version": "6.2.1",
   "description": "Share text, images (and other files), or a link via the native sharing widget of your device. Android is fully supported, as well as iOS 6 and up. WP8 has somewhat limited support.",
   "cordova": {
-    "id": "community-cordova-plugin-social-sharing",
+    "id": "cordova-plugin-social-sharing",
     "platforms": [
       "ios",
       "android",
@@ -12,9 +12,9 @@
       "web"
     ]
   },
-  "repository": "EYALIN/community-cordova-plugin-social-sharing/tree/master",
-  "homepage": "https://github.com/EYALIN/community-cordova-plugin-social-sharing/tree/master",
-  "funding": "https://github.com/sponsors/EYALIN",
+  "repository": "kaenk/cordova-plugin-social-sharing/tree/master",
+  "homepage": "https://github.com/kaenk/cordova-plugin-social-sharing/tree/master",
+  "funding": "https://github.com/sponsors/kaenk",
   "keywords": [
     "Social",
     "Share",
