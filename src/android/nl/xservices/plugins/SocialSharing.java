@@ -18,7 +18,8 @@ import android.util.Base64;
 import android.view.Gravity;
 import android.widget.Toast;
 import android.util.Log;
-
+import android.provider.Telephony;
+import android.telephony.SmsManager;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
@@ -271,10 +272,10 @@ public class SocialSharing extends CordovaPlugin {
         final boolean hasMultipleAttachments = files.length() > 1;
         final Intent sendIntent = new Intent(hasMultipleAttachments ? Intent.ACTION_SEND_MULTIPLE : Intent.ACTION_SEND);
         final Intent receiverIntent = new Intent(cordova.getActivity().getApplicationContext(), ShareChooserPendingIntent.class);
-        
+
         int flag = PendingIntent.FLAG_MUTABLE;
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) {
-          flag = PendingIntent.FLAG_UPDATE_CURRENT; 
+          flag = PendingIntent.FLAG_UPDATE_CURRENT;
         }
         final PendingIntent pendingIntent = PendingIntent.getBroadcast(cordova.getActivity().getApplicationContext(), 0, receiverIntent, flag);
         sendIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
@@ -498,6 +499,7 @@ public class SocialSharing extends CordovaPlugin {
       //set intent data and Type
       sendIntent.setType(type);
     }
+
     return Uri.parse(localImage);
   }
 
@@ -634,33 +636,48 @@ public class SocialSharing extends CordovaPlugin {
       public void run() {
         Intent intent;
 
-        if (Build.VERSION.SDK_INT >= 19) { // Build.VERSION_CODES.KITKAT) {
-          // passing in no phonenumbers for kitkat may result in an error,
-          // but it may also work for some devices, so documentation will need to cover this case
-          intent = new Intent(Intent.ACTION_SENDTO);
-          intent.setData(Uri.parse("smsto:" + (notEmpty(phonenumbers) ? phonenumbers : "")));
-        } else {
-          intent = new Intent(Intent.ACTION_VIEW);
-          // intent.setType("vnd.android-dir/mms-sms");
-          intent.setType("image/*");  // 表示你想分享的是图片
+//        if (Build.VERSION.SDK_INT >= 19) { // Build.VERSION_CODES.KITKAT) {
+//          // passing in no phonenumbers for kitkat may result in an error,
+//          // but it may also work for some devices, so documentation will need to cover this case
+//          intent = new Intent(Intent.ACTION_SEND);
+//          intent.setPackage("com.android.mms");
+//
+//          intent.setTypeAndNormalize("image/*");
+//          intent.setData(Uri.parse("smsto:" + (notEmpty(phonenumbers) ? phonenumbers : "")));
+//        } else {
+//          intent = new Intent(Intent.ACTION_VIEW);
+//          // intent.setType("vnd.android-dir/mms-sms");
+//          intent.setType("image/*");  // 表示你想分享的是图片
+//
+//          if (phonenumbers != null) {
+//            intent.putExtra("address", phonenumbers);
+//          }
+//        }
+        intent = new Intent(Intent.ACTION_SEND);
+        intent.setData(Uri.parse("smsto:" + (notEmpty(phonenumbers) ? phonenumbers : "")));
+        intent.putExtra("sms_body", message);
+        String defaultSmsPackageName = Telephony.Sms.getDefaultSmsPackage(cordova.getActivity());
 
-          if (phonenumbers != null) {
-            intent.putExtra("address", phonenumbers);
-          }
+        if (phonenumbers != null) {
+          intent.putExtra("address", phonenumbers);
         }
-
-         intent.putExtra("sms_body", message);
-        //  intent.putExtra("sms_subject", subject);
-    
+        if (defaultSmsPackageName != null) {
+          intent.setPackage(defaultSmsPackageName);
+        }
         try {
           if (image != null && !"".equals(image)) {
-            final Uri fileUri = getFileUriAndSetType(intent, getDownloadDir(), image, subject, 0);
+            Uri fileUri = getFileUriAndSetType(intent, getDownloadDir(), image, subject, 0);
+            fileUri = FileProvider.getUriForFile(webView.getContext(), cordova.getActivity().getPackageName()+".sharing.provider", new File(fileUri.getPath()));
+
             if (fileUri != null) {
               intent.putExtra(Intent.EXTRA_STREAM, fileUri);
+              intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+              intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             }
           }
           // this was added to start the intent in a new window as suggested in #300 to prevent crashes upon return
           intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
           cordova.startActivityForResult(plugin, intent, 0);
         } catch (Exception e) {
           callbackContext.error(e.getMessage());
