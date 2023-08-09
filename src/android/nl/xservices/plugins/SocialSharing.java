@@ -627,7 +627,7 @@ public class SocialSharing extends CordovaPlugin {
 //    final String subject = options.optString("subject");
 //    final String image = options.optString("image");
     final String subject = null; //options.optString("subject");
-    final String image = null; // options.optString("image");
+    final String image = options.optString("image");
     final String phonenumbers = getPhoneNumbersWithManufacturerSpecificSeparators(p_phonenumbers);
     final SocialSharing plugin = this;
     cordova.getThreadPool().execute(new SocialSharingRunnable(callbackContext) {
