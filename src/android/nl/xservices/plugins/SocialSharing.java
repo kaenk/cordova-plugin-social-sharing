@@ -641,14 +641,17 @@ public class SocialSharing extends CordovaPlugin {
           intent.setData(Uri.parse("smsto:" + (notEmpty(phonenumbers) ? phonenumbers : "")));
         } else {
           intent = new Intent(Intent.ACTION_VIEW);
-          intent.setType("vnd.android-dir/mms-sms");
+          // intent.setType("vnd.android-dir/mms-sms");
+          intent.setType("image/*");  // 表示你想分享的是图片
+
           if (phonenumbers != null) {
             intent.putExtra("address", phonenumbers);
           }
         }
-        intent.putExtra("sms_body", message);
-        intent.putExtra("sms_subject", subject);
 
+         intent.putExtra("sms_body", message);
+        //  intent.putExtra("sms_subject", subject);
+    
         try {
           if (image != null && !"".equals(image)) {
             final Uri fileUri = getFileUriAndSetType(intent, getDownloadDir(), image, subject, 0);
@@ -658,11 +661,11 @@ public class SocialSharing extends CordovaPlugin {
           }
           // this was added to start the intent in a new window as suggested in #300 to prevent crashes upon return
           intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
           cordova.startActivityForResult(plugin, intent, 0);
         } catch (Exception e) {
           callbackContext.error(e.getMessage());
         }
+
       }
     });
     return true;
