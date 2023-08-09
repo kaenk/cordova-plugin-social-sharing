@@ -49,6 +49,7 @@ interface SocialSharingOptions {
 	subject?: string
 	files?: ArrayLike<string>
 	url?: string
+	image?: string
 	chooserTitle?: string
 	appPackageName?: string
 }
